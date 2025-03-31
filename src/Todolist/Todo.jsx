@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { FaSearch, FaPlus, FaCheck, FaTrash, FaClipboard, FaUserAlt, FaLock, FaEnvelope } from "react-icons/fa";
+import { FaSearch, FaPlus, FaCheck, FaTrash, FaClipboard } from "react-icons/fa";
+import Auth from "./Auth";
 import "./Styling.css";
 
-function TodoApp() {
+function Todo() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -13,12 +14,6 @@ function TodoApp() {
   const [searchTerm, setSearchTerm] = useState("");
   const [formError, setFormError] = useState("");
   const [activeAuth, setActiveAuth] = useState(false);
-  const [authFormData, setAuthFormData] = useState({
-    username: '',
-    email: '',
-    password: ''
-  });
-  const [authError, setAuthError] = useState('');
 
   // Initialize date and time
   useEffect(() => {
@@ -132,21 +127,14 @@ function TodoApp() {
 
   const toggleAuthMode = () => {
     setActiveAuth(!activeAuth);
-    setAuthError('');
   };
   
-  const handleAuthChange = (e) => {
-    const { name, value } = e.target;
-    setAuthFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleLogin = (e) => {
-    e.preventDefault();
+  const handleLogin = async (username, password) => {
     if (typeof window === 'undefined') return;
     
     const users = JSON.parse(localStorage.getItem('todoAppUsers') || '[]');
     const user = users.find(u => 
-      u.username === authFormData.username && u.password === authFormData.password
+      u.username === username && u.password === password
     );
 
     if (user) {
@@ -156,32 +144,28 @@ function TodoApp() {
       
       const storedTasks = localStorage.getItem(`todoAppTasks_${user.username}`) || '[]';
       setTasks(JSON.parse(storedTasks));
-      
-      setAuthError('');
     } else {
-      setAuthError('Invalid username or password');
+      throw new Error('Invalid username or password');
     }
   };
 
-  const handleRegister = (e) => {
-    e.preventDefault();
+  const handleRegister = async (username, email, password) => {
     if (typeof window === 'undefined') return;
     
     const users = JSON.parse(localStorage.getItem('todoAppUsers') || '[]');
     
     const userExists = users.some(u => 
-      u.username === authFormData.username || u.email === authFormData.email
+      u.username === username || u.email === email
     );
 
     if (userExists) {
-      setAuthError('Username or email already exists');
-      return;
+      throw new Error('Username or email already exists');
     }
 
     const newUser = {
-      username: authFormData.username,
-      email: authFormData.email,
-      password: authFormData.password
+      username,
+      email,
+      password
     };
 
     const updatedUsers = [...users, newUser];
@@ -192,103 +176,16 @@ function TodoApp() {
     localStorage.setItem('todoAppCurrentUser', JSON.stringify(newUser));
     localStorage.setItem(`todoAppTasks_${newUser.username}`, JSON.stringify([]));
     setTasks([]);
-    setAuthError('');
   };
 
   if (!isLoggedIn) {
     return (
-      <div className={`wrapper ${activeAuth ? "active" : ""}`}>
-        {/* Login Form */}
-        <div className="form-box login">
-          <form onSubmit={handleLogin}>
-            <h1>Login</h1>
-            {authError && <div className="error-message">{authError}</div>}
-            <div className="input-box">
-              <input 
-                type="text" 
-                name="username"
-                placeholder="Username" 
-                required 
-                value={authFormData.username}
-                onChange={handleAuthChange}
-              />
-              <FaUserAlt className="icon" />
-            </div>
-            <div className="input-box">
-              <input 
-                type="password" 
-                name="password"
-                placeholder="Password" 
-                required 
-                value={authFormData.password}
-                onChange={handleAuthChange}
-              />
-              <FaLock className="icon" />
-            </div>
-            <div className="remember-forgot">
-              <label>
-                <input type="checkbox" />
-                Remember me
-              </label>
-              <a href="#">Forgot password?</a>
-            </div>
-            <button type="submit">Login</button>
-            <div className="register-link">
-              <p>Don't have an account? <a href="#" onClick={toggleAuthMode}>Register</a></p>
-            </div>
-          </form>
-        </div>
-
-        {/* Registration Form */}
-        <div className="form-box register">
-          <form onSubmit={handleRegister}>
-            <h1>Registration</h1>
-            {authError && <div className="error-message">{authError}</div>}
-            <div className="input-box">
-              <input 
-                type="text" 
-                name="username"
-                placeholder="Username" 
-                required 
-                value={authFormData.username}
-                onChange={handleAuthChange}
-              />
-              <FaUserAlt className="icon" />
-            </div>
-            <div className="input-box">
-              <input 
-                type="email" 
-                name="email"
-                placeholder="Email" 
-                required 
-                value={authFormData.email}
-                onChange={handleAuthChange}
-              />
-              <FaEnvelope className="icon" />
-            </div>
-            <div className="input-box">
-              <input 
-                type="password" 
-                name="password"
-                placeholder="Password" 
-                required 
-                value={authFormData.password}
-                onChange={handleAuthChange}
-              />
-              <FaLock className="icon" />
-            </div>
-            <div className="remember-forgot">
-              <label>
-                <input type="checkbox" />I agree to terms & conditions
-              </label>
-            </div>
-            <button type="submit">Register</button>
-            <div className="register-link">
-              <p>Already have an account? <a href="#" onClick={toggleAuthMode}>Login</a></p>
-            </div>
-          </form>
-        </div>
-      </div>
+      <Auth 
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+        activeAuth={activeAuth}
+        toggleAuthMode={toggleAuthMode}
+      />
     );
   }
 
@@ -471,4 +368,4 @@ function TodoApp() {
   );
 }
 
-export default TodoApp;
+export default Todo;

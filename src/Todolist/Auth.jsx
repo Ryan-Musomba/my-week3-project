@@ -1,71 +1,32 @@
-import React, { useState } from 'react';
-import { FaUserAlt, FaLock, FaEnvelope } from 'react-icons/fa';
-import './Styling.css';
+import React, { useState } from "react";
+import { FaUserAlt, FaLock, FaEnvelope } from "react-icons/fa";
+import "./Styling.css";
 
-function Auth({ setIsLoggedIn, setCurrentUser, loadUserTasks }) {
-  const [activeAuth, setActiveAuth] = useState(false);
-  const [formData, setFormData] = useState({
+function Auth({ onLogin, onRegister, activeAuth, toggleAuthMode }) {
+  const [authFormData, setAuthFormData] = useState({
     username: '',
     email: '',
     password: ''
   });
   const [authError, setAuthError] = useState('');
 
-  const toggleAuthMode = () => {
-    setActiveAuth(!activeAuth);
-    setAuthError('');
-  };
-  
   const handleAuthChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setAuthFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleLogin = (e) => {
     e.preventDefault();
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find(u => 
-      u.username === formData.username && u.password === formData.password
-    );
-
-    if (user) {
-      setCurrentUser(user);
-      setIsLoggedIn(true);
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      loadUserTasks(user.username);
-      setAuthError('');
-    } else {
-      setAuthError('Invalid username or password');
-    }
+    setAuthError('');
+    onLogin(authFormData.username, authFormData.password)
+      .catch(error => setAuthError(error.message || 'Invalid username or password'));
   };
 
   const handleRegister = (e) => {
     e.preventDefault();
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    const userExists = users.some(u => 
-      u.username === formData.username || u.email === formData.email
-    );
-
-    if (userExists) {
-      setAuthError('Username or email already exists');
-      return;
-    }
-
-    const newUser = {
-      username: formData.username,
-      email: formData.email,
-      password: formData.password
-    };
-
-    const updatedUsers = [...users, newUser];
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-    
-    setCurrentUser(newUser);
-    setIsLoggedIn(true);
-    localStorage.setItem('currentUser', JSON.stringify(newUser));
-    localStorage.setItem(`tasks_${newUser.username}`, JSON.stringify([]));
     setAuthError('');
+    onRegister(authFormData.username, authFormData.email, authFormData.password)
+      .catch(error => setAuthError(error.message || 'Registration failed'));
   };
 
   return (
@@ -81,7 +42,7 @@ function Auth({ setIsLoggedIn, setCurrentUser, loadUserTasks }) {
               name="username"
               placeholder="Username" 
               required 
-              value={formData.username}
+              value={authFormData.username}
               onChange={handleAuthChange}
             />
             <FaUserAlt className="icon" />
@@ -92,7 +53,7 @@ function Auth({ setIsLoggedIn, setCurrentUser, loadUserTasks }) {
               name="password"
               placeholder="Password" 
               required 
-              value={formData.password}
+              value={authFormData.password}
               onChange={handleAuthChange}
             />
             <FaLock className="icon" />
@@ -122,7 +83,7 @@ function Auth({ setIsLoggedIn, setCurrentUser, loadUserTasks }) {
               name="username"
               placeholder="Username" 
               required 
-              value={formData.username}
+              value={authFormData.username}
               onChange={handleAuthChange}
             />
             <FaUserAlt className="icon" />
@@ -133,7 +94,7 @@ function Auth({ setIsLoggedIn, setCurrentUser, loadUserTasks }) {
               name="email"
               placeholder="Email" 
               required 
-              value={formData.email}
+              value={authFormData.email}
               onChange={handleAuthChange}
             />
             <FaEnvelope className="icon" />
@@ -144,7 +105,7 @@ function Auth({ setIsLoggedIn, setCurrentUser, loadUserTasks }) {
               name="password"
               placeholder="Password" 
               required 
-              value={formData.password}
+              value={authFormData.password}
               onChange={handleAuthChange}
             />
             <FaLock className="icon" />

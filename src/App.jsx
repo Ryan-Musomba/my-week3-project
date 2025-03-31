@@ -1,11 +1,11 @@
 import React from 'react'
-import TodoApp from './Todolist/TodoApp'
+import Todo from './Todolist/Todo'
 
 
 function App() {
   return (
     <div>
-   <TodoApp/>
+      <Todo/>
     </div>
 
   )
