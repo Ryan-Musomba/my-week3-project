@@ -15,7 +15,7 @@ function Todo() {
   const [formError, setFormError] = useState("");
   const [activeAuth, setActiveAuth] = useState(false);
 
-  // Initialize date and time
+ 
   useEffect(() => {
     const now = new Date();
     const defaultDate = now.toISOString().split("T")[0];
@@ -24,7 +24,7 @@ function Todo() {
     setTaskTime(defaultTime);
   }, []);
 
-  // Load data from localStorage on mount
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedUser = localStorage.getItem("todoAppCurrentUser");
@@ -41,7 +41,7 @@ function Todo() {
     }
   }, []);
 
-  // Save tasks to localStorage whenever they change
+
   useEffect(() => {
     if (isLoggedIn && currentUser && typeof window !== 'undefined') {
       localStorage.setItem(`todoAppTasks_${currentUser.username}`, JSON.stringify(tasks));
